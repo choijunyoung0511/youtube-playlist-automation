@@ -7,6 +7,8 @@ is anchored to a concrete listening situation, matching spec section 3's
 "good example vs bad example" distinction.
 """
 
+from __future__ import annotations
+
 import random
 from dataclasses import asdict
 

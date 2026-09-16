@@ -5,6 +5,8 @@ so the collection pipeline can be built and tested with
 MockYoutubeAnalyticsProvider before real OAuth credentials exist.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date

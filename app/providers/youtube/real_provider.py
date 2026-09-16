@@ -7,6 +7,8 @@ ClaudeAiProvider's lazy-credential pattern. See
 scripts/youtube_oauth_setup.py for how to obtain a refresh token.
 """
 
+from __future__ import annotations
+
 from .base import UploadResult, YoutubeUploadProvider
 from .scopes import ALL_SCOPES
 

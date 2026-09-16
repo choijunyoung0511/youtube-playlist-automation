@@ -9,6 +9,8 @@ This service only needs *something* to zoom/pan over to prove the video
 pipeline end-to-end.
 """
 
+from __future__ import annotations
+
 import os
 import random
 import shutil

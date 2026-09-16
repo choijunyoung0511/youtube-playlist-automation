@@ -162,11 +162,26 @@ tests/test_phase7.py          pytest version of the Phase 7 flow
 
 ## Setup
 
+Requires **Python 3.9+**. Tested primarily on 3.11; every module uses
+`from __future__ import annotations` specifically so the `X | None`-style
+type hints throughout don't crash on 3.9 (that syntax needs 3.10+ natively).
+
+macOS/Linux:
 ```bash
 python3 -m venv .venv
 ./.venv/bin/pip install -r requirements.txt
 cp .env.example .env
 ```
+
+Windows (`cmd.exe`):
+```cmd
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+copy .env.example .env
+```
+(swap `python` for `py` if that's what's on your PATH; run
+`.venv\Scripts\uvicorn ...` instead of `./.venv/bin/uvicorn ...` in the
+sections below.)
 
 `.env` defaults to `AI_PROVIDER=mock` — no API key needed. To use real
 Claude generation later, set `AI_PROVIDER=claude` and fill in

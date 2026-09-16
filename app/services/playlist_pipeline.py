@@ -4,6 +4,8 @@ Shared by the admin route and the Phase 3 test/scripts so the two never
 drift apart.
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from sqlalchemy.orm import Session

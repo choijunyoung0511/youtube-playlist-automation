@@ -12,6 +12,8 @@ issues two queries per call and merges them. Either can come back empty
 range) - that's treated as zero/None, not an error.
 """
 
+from __future__ import annotations
+
 from datetime import date
 
 from .analytics_base import DailyStats, YoutubeAnalyticsProvider

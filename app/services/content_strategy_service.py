@@ -4,6 +4,8 @@ from PerformanceAnalysisService, ask the AiProvider to extract
 transferable patterns from the top performers, and save the result as
 that channel's current ContentStrategy (replacing the previous one)."""
 
+from __future__ import annotations
+
 from datetime import datetime
 
 from sqlalchemy.orm import Session

@@ -8,10 +8,16 @@ anthropic==0.34.2
 httpx==0.27.2
 pytest==8.3.3
 librosa==0.11.0
-soundfile==0.14.0
-numpy==2.4.6
 Pillow==10.4.0
-google-api-python-client==2.200.0
-google-auth==2.58.0
-google-auth-httplib2==0.4.2
-google-auth-oauthlib==1.4.1
+# Lower-bound (not exact) pins below: numpy 2.1+ / soundfile 0.13+ / these
+# google-* releases dropped Python 3.9 support, so an exact pin here would
+# break `pip install` on 3.9 even though the code itself only needs 3.10+
+# syntax support (see the `from __future__ import annotations` fix history).
+# Leaving these unbounded above lets pip pick the newest version that's
+# actually compatible with whatever interpreter is installing this.
+soundfile>=0.12.1
+numpy>=2.0.2
+google-api-python-client>=2.100.0
+google-auth>=2.35.0
+google-auth-httplib2>=0.2.0
+google-auth-oauthlib>=1.2.1

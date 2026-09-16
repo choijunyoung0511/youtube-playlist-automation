@@ -6,6 +6,8 @@ the moment a method actually calls the API, so the rest of the app never
 needs to know or care whether a key is configured.
 """
 
+from __future__ import annotations
+
 import json
 from dataclasses import asdict
 

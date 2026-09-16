@@ -6,6 +6,8 @@ pipeline can be built and tested with MockYoutubeUploadProvider before
 any real Google Cloud OAuth credentials exist.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
