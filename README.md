@@ -273,7 +273,8 @@ deliberately different performance levels (rather than relying on
 `MockYoutubeAnalyticsProvider`'s semi-random numbers) so the ranking and
 bias can be asserted deterministically. Requires `ffmpeg` on PATH
 (`apt-get install ffmpeg`) and, for Korean text in the rendered
-video/thumbnails, `fonts-noto-cjk` (`apt-get install fonts-noto-cjk`).
+video/thumbnails, a Korean-capable font — see the `VIDEO_FONT_PATH` note
+in scope decisions below if none is auto-detected on your OS.
 
 ## Phase 5/6 setup: getting real YouTube credentials
 
@@ -395,11 +396,16 @@ an insufficient-scope error on analytics calls.
   contributes nothing, bright pixels add light) sidesteps the alpha
   question completely and was verified by extracting and viewing actual
   frames from the rendered output, not just checking exit codes.
-- **Korean text in the video needs `fonts-noto-cjk`** — `drawtext` with
-  the system default (DejaVu Sans) has no Hangul glyphs and would render
-  Korean playlist titles as tofu boxes. `video_service.py` points
-  `drawtext` at `NotoSansCJK-Regular.ttc` explicitly rather than relying
-  on fontconfig's default match.
+- **Korean text in the video needs a Hangul-capable font** — `drawtext`
+  with a typical Latin-only default (e.g. DejaVu Sans) renders Korean
+  playlist titles as tofu boxes. `video_service._resolve_font_path()`
+  checks common install locations across platforms (Noto Sans CJK on
+  Linux via `apt-get install fonts-noto-cjk`, Malgun Gothic on Windows —
+  bundled since Vista, no install needed — Apple SD Gothic Neo on macOS)
+  and falls back to no explicit font (Linux/macOS ffmpeg often still
+  finds one via fontconfig) or Pillow's bitmap default for thumbnails
+  (Latin-only, so Korean text becomes boxes) rather than crashing if none
+  match. Set `VIDEO_FONT_PATH` to override with a specific `.ttf`/`.ttc`.
 - **Rendering a real 30-120 minute video is genuinely slow** (tens of
   thousands of frames through `zoompan` + `blend` + `libx264`), unlike
   every prior Phase 1/2 step which completes in seconds. This is expected

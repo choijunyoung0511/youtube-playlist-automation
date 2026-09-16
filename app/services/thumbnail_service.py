@@ -24,7 +24,12 @@ def render_thumbnail_image(mood: str, text: str, out_path: Path) -> Path:
     draw = ImageDraw.Draw(img, "RGBA")
 
     font_size = 64
-    font = ImageFont.truetype(FONT_PATH, font_size)
+    if FONT_PATH:
+        font = ImageFont.truetype(FONT_PATH, font_size)
+    else:
+        # No Korean-capable font found on this system - fall back rather than
+        # crash; Korean text will render as boxes until VIDEO_FONT_PATH is set.
+        font = ImageFont.load_default(size=font_size)
     lines = _wrap_text(draw, text.split(), font, max_width=WIDTH - 120)
 
     line_height = font_size + 14

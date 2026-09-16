@@ -9,6 +9,7 @@ This service only needs *something* to zoom/pan over to prove the video
 pipeline end-to-end.
 """
 
+import os
 import random
 import shutil
 import subprocess
@@ -18,7 +19,37 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 WIDTH, HEIGHT = 1280, 720
-FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"  # supports Korean text in titles
+
+
+def _resolve_font_path() -> str | None:
+    """Finds a font with Korean (Hangul) glyph support across platforms -
+    a hardcoded Linux path here previously broke this entirely on Windows/
+    macOS. VIDEO_FONT_PATH lets anyone override it explicitly."""
+    override = os.getenv("VIDEO_FONT_PATH")
+    if override and Path(override).exists():
+        return override
+
+    candidates = [
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",  # Debian/Ubuntu fonts-noto-cjk
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        r"C:\Windows\Fonts\malgun.ttf",  # Windows - Malgun Gothic, bundled since Vista
+        r"C:\Windows\Fonts\malgunbd.ttf",
+        "/System/Library/Fonts/Supplemental/AppleSDGothicNeo.ttc",  # macOS
+        "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+    ]
+    for candidate in candidates:
+        if Path(candidate).exists():
+            return candidate
+    return None  # caller falls back to a font-less/default rendering path rather than crashing
+
+
+FONT_PATH = _resolve_font_path()
+
+
+def _ffmpeg_escape_path(path: str) -> str:
+    """ffmpeg filtergraph values treat ':' and '\\' as syntax, which a raw
+    Windows path (C:\\Windows\\Fonts\\malgun.ttf) is full of."""
+    return path.replace("\\", "/").replace(":", r"\:")
 
 MOOD_PALETTES = {
     "차분한": ((20, 30, 60), (45, 65, 100)),
@@ -119,12 +150,13 @@ def compose_video(
     duration_sec: float,
 ) -> Path:
     safe_title = title_text.replace("'", "").replace(":", " -")
+    font_clause = f"fontfile={_ffmpeg_escape_path(FONT_PATH)}:" if FONT_PATH else ""
     filter_complex = (
         f"[0:v]scale={WIDTH}:{HEIGHT},"
         f"zoompan=z='min(zoom+0.0006,1.3)':d=1:s={WIDTH}x{HEIGHT}:fps=25[bg];"
         f"[1:v]loop=loop=-1:size=32767[p];"
         f"[bg][p]blend=all_mode=screen:shortest=1[bgp];"
-        f"[bgp]drawtext=fontfile={FONT_PATH}:text='{safe_title}':"
+        f"[bgp]drawtext={font_clause}text='{safe_title}':"
         f"fontcolor=white@0.9:fontsize=32:x=40:y=h-70:box=1:boxcolor=black@0.35:boxborderw=12[vout]"
     )
 
