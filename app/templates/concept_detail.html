@@ -50,12 +50,7 @@
         <dt>Negative Prompt</dt><dd>{{ t.prompt.negative_prompt }}</dd>
     </dl>
 
-    {% if not t.audio_path %}
-    <form method="post" action="/concepts/{{ concept.id }}/tracks/{{ t.id }}/upload" enctype="multipart/form-data" style="margin-top:12px;">
-        <input type="file" name="file" accept="audio/*" required>
-        <button class="btn secondary" type="submit">Upload Audio (Suno output or other)</button>
-    </form>
-    {% else %}
+    {% if t.audio_path %}
     <h4 style="margin-bottom:4px;">Audio Analysis</h4>
     <dl class="meta-grid">
         <dt>Source</dt><dd>{{ t.generation_provider }} ({{ t.audio_path }})</dd>
@@ -66,6 +61,13 @@
         <dt>Repetition Score</dt><dd>{{ t.analysis_data.repetition_score }}</dd>
     </dl>
     <p class="reasoning">{{ t.quality_reason }}</p>
+    {% endif %}
+
+    {% if t.quality_status.value != "SELECTED" and t.quality_status.value != "PLAYLIST_READY" %}
+    <form method="post" action="/concepts/{{ concept.id }}/tracks/{{ t.id }}/upload" enctype="multipart/form-data" style="margin-top:12px;">
+        <input type="file" name="file" accept="audio/*" required>
+        <button class="btn secondary" type="submit">{{ "Re-upload Audio" if t.audio_path else "Upload Audio (Suno output or other)" }}</button>
+    </form>
     {% endif %}
 </div>
 {% endfor %}
