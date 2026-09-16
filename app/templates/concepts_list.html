@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Concepts - Playlist Automation Admin{% endblock %}
+{% block content %}
+<p><a href="/channels" style="color:#7ab8ff;">&larr; All channels</a></p>
+<div class="channel-box">
+    <strong>{{ channel.name }}</strong> — {{ channel.niche }}
+    &mdash; <a href="/channels/{{ channel.id }}/strategy" style="color:#7ab8ff;">Content Strategy</a>
+</div>
+
+<h1>Playlist Concepts</h1>
+{% if strategy %}
+<p class="reasoning">Using performance-based strategy from {{ strategy.based_on_video_count }} video(s)
+    (refreshed {{ strategy.generated_at.strftime("%Y-%m-%d") }}) — biasing ~30-40% of new concepts toward
+    {{ strategy.recommended_genres|join("/") }} + {{ strategy.recommended_moods|join("/") }}.</p>
+{% else %}
+<p class="reasoning">No performance data yet — concepts are generated from the channel niche only.</p>
+{% endif %}
+<form method="post" action="/channels/{{ channel.id }}/concepts/generate">
+    <button class="btn" type="submit">Generate 10 New Concepts</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Concept Name</th>
+            <th>Situation</th>
+            <th>Genre / Mood</th>
+            <th>Score</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in concepts %}
+        <tr>
+            <td>{{ c.id }}</td>
+            <td><a href="/concepts/{{ c.id }}" style="color:#7ab8ff;">{{ c.concept_name }}</a></td>
+            <td>{{ c.listening_situation }}</td>
+            <td>{{ c.genre }} / {{ c.mood }}</td>
+            <td class="score">{{ c.evaluation_score }}</td>
+            <td><span class="status {{ c.status.value }}">{{ c.status.value }}</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">No concepts yet. Click "Generate 10 New Concepts" to start.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="cost-footer">Total AI cost logged so far: ${{ "%.4f"|format(total_cost) }} (mock provider = $0)</div>
+{% endblock %}

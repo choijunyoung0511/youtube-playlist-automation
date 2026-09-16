@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Channels - Playlist Automation Admin{% endblock %}
+{% block content %}
+<h1>Channels</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Niche</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ch in channels %}
+        <tr>
+            <td>{{ ch.id }}</td>
+            <td><a href="/channels/{{ ch.id }}/concepts" style="color:#7ab8ff;">{{ ch.name }}</a></td>
+            <td>{{ ch.niche }}</td>
+            <td><a href="/channels/{{ ch.id }}/thumbnail-theme" style="color:#7ab8ff;">Thumbnail Theme</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No channels yet. Create one below.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>New Channel</h2>
+<form method="post" action="/channels" class="card">
+    <div class="meta-grid">
+        <label for="name">Name</label>
+        <input id="name" name="name" required style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+        <label for="niche">Niche</label>
+        <input id="niche" name="niche" required style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;"></textarea>
+        <label for="visual_theme">Visual Theme</label>
+        <input id="visual_theme" name="visual_theme" style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+    </div>
+    <button class="btn" type="submit" style="margin-top:10px;">Create Channel</button>
+</form>
+{% endblock %}

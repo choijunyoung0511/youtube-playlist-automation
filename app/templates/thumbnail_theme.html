@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Thumbnail Theme - {{ channel.name }}{% endblock %}
+{% block content %}
+<p><a href="/channels/{{ channel.id }}/concepts" style="color:#7ab8ff;">&larr; Back to concepts</a></p>
+
+<h1>Thumbnail Brand Theme — {{ channel.name }}</h1>
+<p class="reasoning">Reused for every playlist's thumbnail prompt so the channel looks consistent across videos.</p>
+
+<form method="post" action="/channels/{{ channel.id }}/thumbnail-theme" class="card">
+    <div class="meta-grid">
+        <label for="visual_style">Visual Style</label>
+        <input id="visual_style" name="visual_style" value="{{ theme.visual_style }}" style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+        <label for="main_character">Main Character</label>
+        <input id="main_character" name="main_character" value="{{ theme.main_character }}" style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+        <label for="environment">Environment</label>
+        <input id="environment" name="environment" value="{{ theme.environment }}" style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+        <label for="lighting">Lighting</label>
+        <input id="lighting" name="lighting" value="{{ theme.lighting }}" style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+        <label for="camera_angle">Camera Angle</label>
+        <input id="camera_angle" name="camera_angle" value="{{ theme.camera_angle }}" style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+        <label for="text_style">Text Style</label>
+        <input id="text_style" name="text_style" value="{{ theme.text_style }}" style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+        <label for="youtube_playlist_id">YouTube Playlist ID (optional)</label>
+        <input id="youtube_playlist_id" name="youtube_playlist_id" value="{{ channel.youtube_playlist_id or '' }}" placeholder="e.g. PLxxxxxxxxxxxxxxxx" style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+    </div>
+    <p class="reasoning">If set, every upload for this channel is also added to this real YouTube playlist.</p>
+    <button class="btn" type="submit" style="margin-top:10px;">Save Theme</button>
+</form>
+{% endblock %}

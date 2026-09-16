@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}{{ playlist.title }} - Playlist Detail{% endblock %}
+{% block content %}
+<p><a href="/concepts/{{ playlist.concept_id }}" style="color:#7ab8ff;">&larr; Back to concept</a></p>
+
+<h1>{{ playlist.title }} <span class="status {{ playlist.status.value }}">{{ playlist.status.value }}</span></h1>
+
+<div class="card">
+    <dl class="meta-grid">
+        <dt>Target Length</dt><dd>{{ playlist.target_length_min }} min</dd>
+        <dt>Actual Duration</dt><dd>{{ playlist.duration_sec }}s ({{ (playlist.duration_sec / 60) | round(1) }} min)</dd>
+        <dt>Track Count (with repeats)</dt><dd>{{ track_links|length }}</dd>
+        <dt>Audio File</dt><dd>{{ playlist.audio_path }}</dd>
+        <dt>Video File</dt><dd>{{ playlist.video_path }}</dd>
+    </dl>
+</div>
+
+<h2>Track Order</h2>
+<table>
+    <thead>
+        <tr><th>#</th><th>Track</th><th>BPM</th><th>Energy</th><th>Duration</th></tr>
+    </thead>
+    <tbody>
+        {% for link in track_links %}
+        <tr>
+            <td>{{ link.position + 1 }}</td>
+            <td>{{ link.track.title }}</td>
+            <td>{{ link.track.bpm }}</td>
+            <td>{{ link.track.prompt.energy_level }}</td>
+            <td>{{ link.track.duration_sec }}s</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>YouTube Metadata</h2>
+<div class="card">
+    {% if not playlist.title_candidates %}
+    <form method="post" action="/playlists/{{ playlist.id }}/metadata/generate">
+        <button class="btn" type="submit">Generate Titles, Description &amp; Thumbnail</button>
+    </form>
+    {% else %}
+    <h3>Title Candidates</h3>
+    <form method="post" action="/playlists/{{ playlist.id }}/metadata/choose-title">
+        {% for t in playlist.title_candidates %}
+        <div style="margin-bottom:6px;">
+            <label>
+                <input type="radio" name="title" value="{{ t }}" {% if t == playlist.chosen_title %}checked{% endif %}>
+                {{ t }}
+            </label>
+        </div>
+        {% endfor %}
+        <button class="btn secondary" type="submit">Use Selected Title</button>
+    </form>
+    <form method="post" action="/playlists/{{ playlist.id }}/metadata/regenerate-titles" style="margin-top:6px;">
+        <button class="btn secondary" type="submit">Regenerate Title Candidates</button>
+    </form>
+
+    <h3>Description</h3>
+    <p class="reasoning" style="white-space:pre-line;">{{ playlist.youtube_description }}</p>
+    <p><strong>Hashtags:</strong> {{ playlist.hashtags|join(" ") }}</p>
+    <p><strong>Keywords:</strong> {{ playlist.keywords|join(", ") }}</p>
+    <p><strong>Category:</strong> {{ playlist.playlist_category }}</p>
+
+    <h3>Thumbnail</h3>
+    {% if playlist.thumbnail_path %}
+    <img src="/media/thumbnails/{{ playlist.thumbnail_path.split('/')[-1] }}" style="max-width:480px;border-radius:8px;display:block;margin-bottom:10px;">
+    <p class="reasoning">{{ playlist.thumbnail_prompt }}</p>
+    {% endif %}
+    <form method="post" action="/playlists/{{ playlist.id }}/metadata/regenerate-thumbnail">
+        <button class="btn secondary" type="submit">Regenerate Thumbnail</button>
+    </form>
+
+    {% if playlist.status.value in ["REVIEW_REQUIRED", "REJECTED"] %}
+    <div style="margin-top:16px;">
+        <form method="post" action="/playlists/{{ playlist.id }}/approve" style="display:inline;">
+            <button class="btn approve" type="submit">Approve</button>
+        </form>
+        <form method="post" action="/playlists/{{ playlist.id }}/reject" style="display:inline;">
+            <button class="btn secondary" type="submit">Reject</button>
+        </form>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+
+{% if playlist.status.value in ["APPROVED", "UPLOADED"] %}
+<h2>YouTube Upload</h2>
+<div class="card">
+    {% if playlist.youtube_video and playlist.youtube_video.youtube_video_id %}
+    <p><strong>Uploaded</strong> — video ID: {{ playlist.youtube_video.youtube_video_id }}</p>
+    <p><a href="https://www.youtube.com/watch?v={{ playlist.youtube_video.youtube_video_id }}" style="color:#7ab8ff;" target="_blank">https://www.youtube.com/watch?v={{ playlist.youtube_video.youtube_video_id }}</a></p>
+    {% else %}
+    <form method="post" action="/playlists/{{ playlist.id }}/upload">
+        <label for="privacy_status">Visibility</label>
+        <select name="privacy_status" id="privacy_status" style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+            <option value="private" selected>Private</option>
+            <option value="unlisted">Unlisted</option>
+            <option value="public">Public</option>
+        </select>
+        <button class="btn approve" type="submit">Upload to YouTube</button>
+    </form>
+    {% endif %}
+</div>
+
+{% if playlist.youtube_video and playlist.youtube_video.youtube_video_id %}
+<h2>Performance Analytics</h2>
+<div class="card">
+    <form method="post" action="/playlists/{{ playlist.id }}/analytics/collect">
+        <button class="btn secondary" type="submit">Collect Today's Stats</button>
+    </form>
+    {% if stats_history %}
+    <table style="margin-top:12px;">
+        <thead>
+            <tr>
+                <th>Date</th><th>Views</th><th>Watch Time (min)</th><th>Avg View Dur.</th>
+                <th>Avg % Viewed</th><th>Impressions</th><th>CTR %</th><th>Likes</th><th>Comments</th><th>Subs Gained</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in stats_history %}
+            <tr>
+                <td>{{ s.date.strftime("%Y-%m-%d") }}</td>
+                <td>{{ s.views }}</td>
+                <td>{{ s.watch_time_min }}</td>
+                <td>{{ s.average_view_duration_sec }}s</td>
+                <td>{{ s.average_percentage_viewed }}%</td>
+                <td>{{ s.impressions }}</td>
+                <td>{{ s.ctr }}</td>
+                <td>{{ s.likes }}</td>
+                <td>{{ s.comments }}</td>
+                <td>{{ s.subscribers_gained }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="reasoning">No stats collected yet.</p>
+    {% endif %}
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

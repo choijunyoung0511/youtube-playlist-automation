@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Content Strategy - {{ channel.name }}{% endblock %}
+{% block content %}
+<p><a href="/channels/{{ channel.id }}/concepts" style="color:#7ab8ff;">&larr; Back to concepts</a></p>
+
+<h1>Content Strategy — {{ channel.name }}</h1>
+<p class="reasoning">
+    Recomputed from accumulated YouTube performance data. Automatically applied to
+    ~30-40% of the next "Generate 10 New Concepts" batch — the rest stays fresh exploration.
+</p>
+
+<form method="post" action="/channels/{{ channel.id }}/strategy/refresh" class="card">
+    <button class="btn" type="submit">Refresh Strategy from Latest Analytics</button>
+</form>
+
+{% if strategy %}
+<div class="card">
+    <dl class="meta-grid">
+        <dt>Based on</dt><dd>{{ strategy.based_on_video_count }} uploaded video(s) with collected stats</dd>
+        <dt>Last refreshed</dt><dd>{{ strategy.generated_at.strftime("%Y-%m-%d %H:%M UTC") }}</dd>
+        <dt>Recommended situations</dt><dd>{{ strategy.recommended_situations|join(", ") }}</dd>
+        <dt>Recommended genres</dt><dd>{{ strategy.recommended_genres|join(", ") }}</dd>
+        <dt>Recommended moods</dt><dd>{{ strategy.recommended_moods|join(", ") }}</dd>
+        <dt>BPM range</dt><dd>{{ strategy.bpm_min }} - {{ strategy.bpm_max }}</dd>
+        <dt>Video length</dt><dd>{{ strategy.video_length_minutes_recommendation }} min</dd>
+    </dl>
+    <h3>Summary</h3>
+    <p class="reasoning">{{ strategy.summary }}</p>
+    <h3>Title Structure Notes</h3>
+    <p class="reasoning">{{ strategy.title_structure_notes }}</p>
+    <h3>Thumbnail Style Notes</h3>
+    <p class="reasoning">{{ strategy.thumbnail_style_notes }}</p>
+    <h3>Avoid Repeating</h3>
+    <p class="reasoning">{{ strategy.things_to_avoid_repeating }}</p>
+</div>
+{% else %}
+<div class="card">
+    <p class="reasoning">No strategy yet — upload at least one video and collect analytics for it, then click Refresh above.</p>
+</div>
+{% endif %}
+{% endblock %}

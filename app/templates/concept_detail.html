@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ concept.concept_name }} - Concept Detail{% endblock %}
+{% block content %}
+<p><a href="/channels/{{ concept.channel_id }}/concepts" style="color:#7ab8ff;">&larr; Back to concepts</a></p>
+
+<h1>{{ concept.concept_name }} <span class="status {{ concept.status.value }}">{{ concept.status.value }}</span></h1>
+
+<div class="card">
+    <dl class="meta-grid">
+        <dt>Listening Situation</dt><dd>{{ concept.listening_situation }}</dd>
+        <dt>Target Audience</dt><dd>{{ concept.target_audience }}</dd>
+        <dt>Genre / Sub-genre</dt><dd>{{ concept.genre }} / {{ concept.sub_genre }}</dd>
+        <dt>Mood</dt><dd>{{ concept.mood }}</dd>
+        <dt>Visual Theme</dt><dd>{{ concept.visual_theme }}</dd>
+        <dt>Keywords</dt><dd>{{ concept.keywords|join(", ") }}</dd>
+        <dt>Playlist Length</dt><dd>{{ concept.estimated_playlist_length_min }} min</dd>
+        <dt>Description</dt><dd>{{ concept.description }}</dd>
+        <dt>Evaluation Score</dt><dd class="score">{{ concept.evaluation_score }} / 100</dd>
+    </dl>
+
+    {% if concept.evaluation_breakdown %}
+    <h3>Evaluation Breakdown</h3>
+    {% for k, v in concept.evaluation_breakdown.items() %}
+    <div class="breakdown-row"><span>{{ k }}</span><span>{{ v }}</span></div>
+    {% endfor %}
+    <p class="reasoning">{{ concept.evaluation_reasoning }}</p>
+    {% endif %}
+
+    {% if concept.status.value in ["SELECTED"] %}
+    <form method="post" action="/concepts/{{ concept.id }}/approve" style="margin-top:14px;">
+        <button class="btn approve" type="submit">Approve &amp; Generate Music Prompts</button>
+    </form>
+    {% endif %}
+</div>
+
+{% if tracks %}
+<h2>Music Prompt Candidates ({{ tracks|length }})</h2>
+{% for t in tracks %}
+<div class="card">
+    <strong>{{ t.title }}</strong> &mdash; <span class="status {{ t.quality_status.value }}">{{ t.quality_status.value }}</span>
+    <dl class="meta-grid">
+        <dt>BPM / Tempo</dt><dd>{{ t.prompt.bpm }} / {{ t.prompt.tempo }}</dd>
+        <dt>Instruments</dt><dd>{{ t.prompt.instruments|join(", ") }}</dd>
+        <dt>Energy Level</dt><dd>{{ t.prompt.energy_level }}</dd>
+        <dt>Structure</dt><dd>{{ t.prompt.song_structure }}</dd>
+        <dt>Production Style</dt><dd>{{ t.prompt.production_style }}</dd>
+        <dt>Vocal</dt><dd>{{ t.prompt.vocal }}</dd>
+        <dt>Duration Target</dt><dd>{{ t.prompt.duration_target_sec }}s</dd>
+        <dt>Loopability</dt><dd>{{ t.prompt.loopability }}</dd>
+        <dt>Negative Prompt</dt><dd>{{ t.prompt.negative_prompt }}</dd>
+    </dl>
+
+    {% if not t.audio_path %}
+    <form method="post" action="/concepts/{{ concept.id }}/tracks/{{ t.id }}/upload" enctype="multipart/form-data" style="margin-top:12px;">
+        <input type="file" name="file" accept="audio/*" required>
+        <button class="btn secondary" type="submit">Upload Audio (Suno output or other)</button>
+    </form>
+    {% else %}
+    <h4 style="margin-bottom:4px;">Audio Analysis</h4>
+    <dl class="meta-grid">
+        <dt>Source</dt><dd>{{ t.generation_provider }} ({{ t.audio_path }})</dd>
+        <dt>Actual Duration</dt><dd>{{ t.analysis_data.duration_sec }}s</dd>
+        <dt>Intro Silence</dt><dd>{{ t.analysis_data.intro_silence_sec }}s</dd>
+        <dt>Max Volume Jump</dt><dd>{{ t.analysis_data.max_volume_jump_ratio }}</dd>
+        <dt>Overall RMS</dt><dd>{{ t.analysis_data.overall_rms }}</dd>
+        <dt>Repetition Score</dt><dd>{{ t.analysis_data.repetition_score }}</dd>
+    </dl>
+    <p class="reasoning">{{ t.quality_reason }}</p>
+    {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+{% if selected_count > 0 %}
+<h2>Playlist</h2>
+<div class="card">
+    {% if playlist %}
+    <p>Playlist already built: <a href="/playlists/{{ playlist.id }}" style="color:#7ab8ff;">{{ playlist.title }}</a>
+        &mdash; <span class="status {{ playlist.status.value }}">{{ playlist.status.value }}</span></p>
+    {% endif %}
+    <p>{{ selected_count }} track(s) SELECTED/PLAYLIST_READY for this concept.</p>
+    <form method="post" action="/concepts/{{ concept.id }}/playlist/build">
+        <label for="target_length_min">Target length</label>
+        <select name="target_length_min" id="target_length_min" style="background:#0f1115;color:#fff;border:1px solid #262a33;border-radius:4px;padding:6px;">
+            <option value="30">30 min</option>
+            <option value="60" selected>60 min</option>
+            <option value="90">90 min</option>
+            <option value="120">120 min</option>
+        </select>
+        <button class="btn" type="submit">{{ "Rebuild" if playlist else "Build" }} Playlist</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
